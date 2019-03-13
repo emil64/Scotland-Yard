@@ -38,6 +38,7 @@ public class ScotlandYardModel implements ScotlandYardGame {
 			PlayerConfiguration mrX, PlayerConfiguration firstDetective,
 			PlayerConfiguration... restOfTheDetectives) {
 
+		this.rounds = requireNonNull(rounds);
 	    requireNonNull(mrX);
         requireNonNull(firstDetective);
         requireNonNull(restOfTheDetectives);
