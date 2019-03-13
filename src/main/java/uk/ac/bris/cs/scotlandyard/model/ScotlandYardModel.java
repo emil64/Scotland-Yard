@@ -14,6 +14,7 @@ public class ScotlandYardModel implements ScotlandYardGame {
 	private List<Boolean> rounds;
 	private Graph<Integer, Transport> graph;
 	private PlayerConfiguration mrX;
+	private List<PlayerConfiguration> players;
 
 
 	public ScotlandYardModel(List<Boolean> rounds, Graph<Integer, Transport> graph,
@@ -22,6 +23,11 @@ public class ScotlandYardModel implements ScotlandYardGame {
 
 	    requireNonNull(mrX);
         requireNonNull(firstDetective);
+        requireNonNull(restOfTheDetectives);
+
+        for (PlayerConfiguration player : players){
+        	requireNonNull(player);
+		}
 	}
 
 	@Override
