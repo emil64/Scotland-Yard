@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import static java.util.Objects.requireNonNull;
 
 import uk.ac.bris.cs.gamekit.graph.Graph;
 
@@ -12,12 +13,15 @@ public class ScotlandYardModel implements ScotlandYardGame {
 
 	private List<Boolean> rounds;
 	private Graph<Integer, Transport> graph;
-	PlayerConfiguration mrX, firstDetective
+	private PlayerConfiguration mrX;
+
 
 	public ScotlandYardModel(List<Boolean> rounds, Graph<Integer, Transport> graph,
 			PlayerConfiguration mrX, PlayerConfiguration firstDetective,
 			PlayerConfiguration... restOfTheDetectives) {
-		// TODO
+
+	    requireNonNull(mrX);
+        requireNonNull(firstDetective);
 	}
 
 	@Override
