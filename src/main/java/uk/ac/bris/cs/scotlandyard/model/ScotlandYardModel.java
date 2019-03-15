@@ -8,45 +8,86 @@ import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.Objects.requireNonNull;
 import static uk.ac.bris.cs.scotlandyard.model.Colour.BLACK;
-import static uk.ac.bris.cs.scotlandyard.model.Ticket.DOUBLE;
-import static uk.ac.bris.cs.scotlandyard.model.Ticket.SECRET;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import static uk.ac.bris.cs.scotlandyard.model.Ticket.*;
+import static uk.ac.bris.cs.scotlandyard.model.Transport.FERRY;
+
+import java.util.*;
 import java.util.function.Consumer;
 import uk.ac.bris.cs.gamekit.graph.Edge;
 import uk.ac.bris.cs.gamekit.graph.Graph;
 import uk.ac.bris.cs.gamekit.graph.ImmutableGraph;
-
-
-import uk.ac.bris.cs.gamekit.graph.Graph;
 
 // TODO implement all methods and pass all tests
 public class ScotlandYardModel implements ScotlandYardGame {
 
 	private List<Boolean> rounds;
 	private Graph<Integer, Transport> graph;
-	private PlayerConfiguration mrX;
-	private List<PlayerConfiguration> players;
-
+	private ScotlandYardPlayer mrX;
+	private List<ScotlandYardPlayer> detectives;
+    private Colour currentPlayer;
+    private int currentRound;
 
 	public ScotlandYardModel(List<Boolean> rounds, Graph<Integer, Transport> graph,
 			PlayerConfiguration mrX, PlayerConfiguration firstDetective,
 			PlayerConfiguration... restOfTheDetectives) {
 
-		this.rounds = requireNonNull(rounds);
-	    requireNonNull(mrX);
+        requireNonNull(mrX);
+	    this.mrX = new ScotlandYardPlayer(mrX.player, mrX.colour, mrX.location, mrX.tickets);
         requireNonNull(firstDetective);
         requireNonNull(restOfTheDetectives);
+        this.rounds = requireNonNull(rounds);
+        this.graph = requireNonNull(graph);
+        currentPlayer = BLACK;
+        currentRound = NOT_STARTED;
 
-        for (PlayerConfiguration player : players){
+        if(mrX.colour != BLACK)
+            throw new IllegalArgumentException("Mr X should be black!");
+
+        detectives = new ArrayList<>();
+        detectives.add(new ScotlandYardPlayer(firstDetective.player, firstDetective.colour, firstDetective.location, firstDetective.tickets));
+
+        if(!(mrX.tickets.containsKey(TAXI) &&
+                mrX.tickets.containsKey(BUS) &&
+                mrX.tickets.containsKey(UNDERGROUND) &&
+                mrX.tickets.containsKey(FERRY) &&
+                mrX.tickets.containsKey(SECRET) &&
+                mrX.tickets.containsKey(DOUBLE)))
+            throw new IllegalArgumentException("Every mrX needs fields for every possible ticket");
+
+        //adds detectives to ScotlandyardPlayer list
+        for (PlayerConfiguration player : restOfTheDetectives){
         	requireNonNull(player);
+            if(player.colour == BLACK)
+                throw new IllegalArgumentException("Detectives have black colour?!");
+            if(!(player.tickets.containsKey(TAXI) &&
+                    player.tickets.containsKey(BUS) &&
+                    player.tickets.containsKey(UNDERGROUND) &&
+                    player.tickets.containsKey(FERRY) &&
+                    player.tickets.containsKey(SECRET) &&
+                    player.tickets.containsKey(DOUBLE)))
+                throw new IllegalArgumentException("Every player needs fields for every possible ticket");
+            detectives.add(new ScotlandYardPlayer(player.player, player.colour, player.location, player.tickets));
 		}
-	}
+
+        //tests for identical locations and colours + secret/double moves
+        Set<Integer> loc = new HashSet<>();
+        Set<Colour> col = new HashSet<>();
+        for (ScotlandYardPlayer player : detectives) {
+            if (loc.contains(player.location()))
+                throw new IllegalArgumentException("Duplicate location");
+            loc.add(player.location());
+            if (col.contains(player.colour()))
+                throw new IllegalArgumentException("Duplicate colour");
+            col.add(player.colour());
+
+            //MUIE PSD
+            if(player.hasTickets(SECRET) || player.hasTickets(DOUBLE))
+                throw new IllegalArgumentException("Detectives don't have secret moves!");
+        }
+
+
+
+ 	}
 
 	@Override
 	public void registerSpectator(Spectator spectator) {
@@ -104,14 +145,12 @@ public class ScotlandYardModel implements ScotlandYardGame {
 
 	@Override
 	public Colour getCurrentPlayer() {
-		// TODO
-		throw new RuntimeException("Implement me");
+		return currentPlayer;
 	}
 
 	@Override
 	public int getCurrentRound() {
-		// TODO
-		throw new RuntimeException("Implement me");
+		return currentRound;
 	}
 
 	@Override
@@ -122,8 +161,7 @@ public class ScotlandYardModel implements ScotlandYardGame {
 
 	@Override
 	public Graph<Integer, Transport> getGraph() {
-		// TODO
-		throw new RuntimeException("Implement me");
+		return graph;
 	}
 
 }
