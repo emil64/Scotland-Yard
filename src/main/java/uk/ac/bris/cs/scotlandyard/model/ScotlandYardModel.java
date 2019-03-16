@@ -34,6 +34,7 @@ public class ScotlandYardModel implements ScotlandYardGame {
     private boolean gameOver;
     private List<Colour> playersList;
     private Set<Colour> winningPlayer;
+    private int lastMrX = 0;
 
 	public ScotlandYardModel(List<Boolean> rounds, Graph<Integer, Transport> graph,
 			PlayerConfiguration mrX, PlayerConfiguration firstDetective,
@@ -53,7 +54,7 @@ public class ScotlandYardModel implements ScotlandYardGame {
         currentRound = NOT_STARTED;
         gameOver = false;
 
-        players = new HashMap<>();
+		players = new HashMap<>();
 		players.put(mrX.colour, this.mrX);
 
 
@@ -159,7 +160,14 @@ public class ScotlandYardModel implements ScotlandYardGame {
 		ScotlandYardPlayer p = players.get(colour);
 		if(p == null)
 			return Optional.empty();
-		return Optional.ofNullable(p.location());
+		if(p.isDetective())
+			return Optional.ofNullable(p.location());
+
+		if(currentRound != 0 && rounds.get(currentRound-1)) {
+			lastMrX = p.location();
+			return Optional.ofNullable(lastMrX);
+		}
+		return Optional.ofNullable(lastMrX);
 	}
 
 	@Override
