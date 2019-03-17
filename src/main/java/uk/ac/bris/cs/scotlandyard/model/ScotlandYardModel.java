@@ -33,7 +33,8 @@ public class ScotlandYardModel implements ScotlandYardGame {
 
     private boolean gameOver;
     private List<Colour> playersList;
-    private Set<Colour> winningPlayer;
+    private Set<Colour> winningPlayer = new HashSet<>();
+	private Collection<Spectator> spectators = new HashSet<>();
     private int lastMrX = 0;
 
 	public ScotlandYardModel(List<Boolean> rounds, Graph<Integer, Transport> graph,
@@ -48,7 +49,7 @@ public class ScotlandYardModel implements ScotlandYardGame {
         this.graph = requireNonNull(graph);
         if(rounds.isEmpty() || graph.isEmpty())
         	throw new IllegalArgumentException("Rounds and/or graph should never be empty");
-		winningPlayer = new HashSet<>();
+		//winningPlayer = new HashSet<>();
 
         currentPlayer = BLACK;
         currentRound = NOT_STARTED;
@@ -58,10 +59,17 @@ public class ScotlandYardModel implements ScotlandYardGame {
 		players.put(mrX.colour, this.mrX);
 
 
-        if(mrX.colour != BLACK)
+       if(mrX.colour != BLACK)
             throw new IllegalArgumentException("Mr X should be black!");
+		if(!(mrX.tickets.containsKey(TAXI) &&
+				mrX.tickets.containsKey(BUS) &&
+				mrX.tickets.containsKey(UNDERGROUND) &&
+				mrX.tickets.containsKey(SECRET) &&
+				mrX.tickets.containsKey(DOUBLE)))
+			throw new IllegalArgumentException("Every mrX needs fields for every possible ticket");
 
-        detectives = new ArrayList<>();
+
+		detectives = new ArrayList<>();
 		if(firstDetective.colour == BLACK)
 			throw new IllegalArgumentException("Detectives have black colour?!");
 		if(!(firstDetective.tickets.containsKey(TAXI) &&
@@ -72,13 +80,6 @@ public class ScotlandYardModel implements ScotlandYardGame {
 			throw new IllegalArgumentException("firstDetective needs fields for every possible ticket");
 		detectives.add(new ScotlandYardPlayer(firstDetective.player, firstDetective.colour, firstDetective.location, firstDetective.tickets));
 
-
-        if(!(mrX.tickets.containsKey(TAXI) &&
-                mrX.tickets.containsKey(BUS) &&
-                mrX.tickets.containsKey(UNDERGROUND) &&
-                mrX.tickets.containsKey(SECRET) &&
-                mrX.tickets.containsKey(DOUBLE)))
-            throw new IllegalArgumentException("Every mrX needs fields for every possible ticket");
 
         playersList = new ArrayList<>();
         playersList.add(mrX.colour);
@@ -109,28 +110,31 @@ public class ScotlandYardModel implements ScotlandYardGame {
                 throw new IllegalArgumentException("Duplicate colour");
             col.add(player.colour());
 
-            //MUIE PSD
+            //check that detectives don't have secret or double tickets
             if(player.hasTickets(SECRET) || player.hasTickets(DOUBLE))
-                throw new IllegalArgumentException("Detectives don't have secret moves!");
+                throw new IllegalArgumentException("Detectives don't have secret or double moves!");
 
-            //Maps each detective to a colour;=
+            //Maps each detective to a colour
 			players.put(player.colour(), player);
         }
-
-
-
  	}
+ 	//private Set<Move> validMove(Colour player) {...}
+
 
 	@Override
 	public void registerSpectator(Spectator spectator) {
-		// TODO
-		throw new RuntimeException("Implement me");
+		for (Spectator spec : spectators){
+			if (spec.equals(spectator)) throw new IllegalArgumentException("Duplicate spectator");
+		}
+
+		spectators.add(requireNonNull(spectator));
 	}
 
 	@Override
 	public void unregisterSpectator(Spectator spectator) {
-		// TODO
-		throw new RuntimeException("Implement me");
+		spectator = requireNonNull(spectator);
+		if (spectators.contains(spectator)) spectators.remove(spectator);
+		else throw new IllegalArgumentException("Spectator can't be unregistered, since it was not registered");
 	}
 
 	@Override
@@ -141,8 +145,7 @@ public class ScotlandYardModel implements ScotlandYardGame {
 
 	@Override
 	public Collection<Spectator> getSpectators() {
-		// TODO
-		throw new RuntimeException("Implement me");
+		return Collections.unmodifiableCollection(spectators);
 	}
 
 	@Override
