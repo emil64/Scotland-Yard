@@ -87,10 +87,9 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
         playersList = new ArrayList<>();
         playersList.add(mrX.colour);
 		playersList.add(firstDetective.colour);
-        //adds detectives to ScotlandyardPlayer list
+        //adds detectives to ScotlandYardPlayer list
         for (PlayerConfiguration player : restOfTheDetectives){
         	requireNonNull(player);
-        	//player.player.makeMove();
             if(player.colour == BLACK)
                 throw new IllegalArgumentException("Detectives have black colour?!");
             if(!(player.tickets.containsKey(TAXI) &&
@@ -126,16 +125,14 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 
 	@Override
 	public void registerSpectator(Spectator spectator) {
-		for (Spectator spec : spectators){
-			if (spec.equals(spectator)) throw new IllegalArgumentException("Duplicate spectator");
-		}
-
-		spectators.add(requireNonNull(spectator));
+		requireNonNull(spectator);
+		if (!spectators.contains(spectator)) spectators.add(spectator);
+		else throw new IllegalArgumentException("Duplicate spectator");
 	}
 
 	@Override
 	public void unregisterSpectator(Spectator spectator) {
-		spectator = requireNonNull(spectator);
+		requireNonNull(spectator);
 		if (spectators.contains(spectator)) spectators.remove(spectator);
 		else throw new IllegalArgumentException("Spectator can't be unregistered, since it was not registered");
 	}
