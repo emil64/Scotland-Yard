@@ -14,14 +14,17 @@ import static uk.ac.bris.cs.scotlandyard.model.Transport.FERRY;
 import java.text.CollationElementIterator;
 import java.util.*;
 import java.util.function.Consumer;
+
+import com.google.common.collect.ImmutableList;
 import uk.ac.bris.cs.gamekit.graph.Edge;
 import uk.ac.bris.cs.gamekit.graph.Graph;
 import uk.ac.bris.cs.gamekit.graph.ImmutableGraph;
+import uk.ac.bris.cs.gamekit.graph.Node;
 
 import javax.swing.text.html.Option;
 
 // TODO implement all methods and pass all tests
-public class ScotlandYardModel implements ScotlandYardGame {
+public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 
 	private List<Boolean> rounds;
 	private Graph<Integer, Transport> graph;
@@ -146,6 +149,31 @@ public class ScotlandYardModel implements ScotlandYardGame {
 	}
 
 	private Set<Move> validMove(Colour player) {
+		ScotlandYardPlayer p = players.get(player);
+		Set<Move> set = new HashSet<>();
+		Collection<Edge<Integer, Transport>> edges = getGraph().getEdgesFrom(new Node<Integer>(p.location()));
+		for (Edge<Integer, Transport> edge : edges){
+			Transport t = edge.data();
+			int destination = edge.destination().value();
+			Boolean mere = true;
+			if(!p.hasTickets(Ticket.fromTransport(t)))
+				mere = false;
+			for (ScotlandYardPlayer d : detectives){
+				if(d.location() == destination)
+					mere = false;
+			}
+			if(mere)
+				set.add(new TicketMove(p.colour(), Ticket.fromTransport(t), destination));
+		}
+		if(p.isMrX() && p.hasTickets(DOUBLE)){
+
+		}
+		return set;
+	}
+
+
+	@Override
+	public void accept(Move move){
 
 	}
 
