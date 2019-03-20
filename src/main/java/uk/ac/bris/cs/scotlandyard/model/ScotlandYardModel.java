@@ -87,6 +87,7 @@ public class ScotlandYardModel implements ScotlandYardGame {
         //adds detectives to ScotlandyardPlayer list
         for (PlayerConfiguration player : restOfTheDetectives){
         	requireNonNull(player);
+        	//player.player.makeMove();
             if(player.colour == BLACK)
                 throw new IllegalArgumentException("Detectives have black colour?!");
             if(!(player.tickets.containsKey(TAXI) &&
@@ -118,7 +119,6 @@ public class ScotlandYardModel implements ScotlandYardGame {
 			players.put(player.colour(), player);
         }
  	}
- 	//private Set<Move> validMove(Colour player) {...}
 
 
 	@Override
@@ -139,8 +139,14 @@ public class ScotlandYardModel implements ScotlandYardGame {
 
 	@Override
 	public void startRotate() {
-		// TODO
-		throw new RuntimeException("Implement me");
+		ScotlandYardPlayer player = players.get(currentPlayer);
+		if(isGameOver()) throw new IllegalStateException("Game is over at the beginning of the rotation");
+		Set<Move> validMoves = validMove(player.colour());
+		player.player().makeMove(this, player.location(), validMoves, this);
+	}
+
+	private Set<Move> validMove(Colour player) {
+
 	}
 
 	@Override
