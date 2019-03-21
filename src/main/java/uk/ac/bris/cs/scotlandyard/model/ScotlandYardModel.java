@@ -143,6 +143,7 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 		if(isGameOver()) throw new IllegalStateException("Game is over at the beginning of the rotation");
 		Set<Move> validMoves = validMove(player.colour());
 		player.player().makeMove(this, player.location(), validMoves, this);
+		currentRound++;
 	}
 
 	private Set<Move> validMove(Colour player) {
@@ -169,7 +170,8 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 
 	@Override
 	public void accept(Move move){
-
+        if(move == null)
+            throw new NullPointerException("Null move");
 	}
 
 	@Override
