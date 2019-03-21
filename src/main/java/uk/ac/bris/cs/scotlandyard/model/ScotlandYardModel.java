@@ -146,10 +146,12 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 		currentRound++;
 	}
 
+	Set<Move> validMoves;
+
 	private Set<Move> validMove(Colour player) {
 		ScotlandYardPlayer p;
 		p = players.get(player);
-		Set<Move> set = new HashSet<>();
+		validMoves = new HashSet<>();
 		Collection<Edge<Integer, Transport>> edges = getGraph().getEdgesFrom(new Node<Integer>(p.location()));
 		for (Edge<Integer, Transport> edge : edges){
 			Transport t = edge.data();
@@ -162,16 +164,31 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 					mere = false;
 			}
 			if(mere)
-				set.add(new TicketMove(p.colour(), Ticket.fromTransport(t), destination));
+				validMoves.add(new TicketMove(p.colour(), Ticket.fromTransport(t), destination));
 		}
-		return set;
+		//System.out.println(validMoves.toString());
+		if(validMoves.isEmpty());
+			//validMoves.add();
+		return Collections.unmodifiableSet(validMoves);
 	}
 
+	private Colour nextPlayer(Colour currentPlayer){
+		int index = playersList.indexOf(currentPlayer) + 1;
+		if (index < playersList.size())
+			return playersList.get(index);
+		else
+			return playersList.get(0);
+	}
 
 	@Override
 	public void accept(Move move){
-        if(move == null)
-            throw new NullPointerException("Null move");
+        requireNonNull(move);
+        if(!validMoves.contains(move))
+        	throw new IllegalArgumentException("Move not in valid moves!");
+		currentPlayer = nextPlayer(currentPlayer);
+		ScotlandYardPlayer cp = players.get(currentPlayer);
+		cp.player().makeMove(this, cp.location(), validMove(currentPlayer), this);
+
 	}
 
 	@Override
