@@ -143,15 +143,14 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 		if(isGameOver()) throw new IllegalStateException("Game is over at the beginning of the rotation");
 		Set<Move> validMoves = validMove(player.colour());
 		player.player().makeMove(this, player.location(), validMoves, this);
-		currentRound++;
 	}
 
-	Set<Move> validMoves;
+	Set<Move> validMoves = new HashSet<>();;
 
 	private Set<Move> validMove(Colour player) {
 		ScotlandYardPlayer p;
 		p = players.get(player);
-		validMoves = new HashSet<>();
+		validMoves.clear();
 		Collection<Edge<Integer, Transport>> edges = getGraph().getEdgesFrom(new Node<Integer>(p.location()));
 		for (Edge<Integer, Transport> edge : edges){
 			Transport t = edge.data();
@@ -174,18 +173,27 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 
 	private Colour nextPlayer(Colour currentPlayer){
 		int index = playersList.indexOf(currentPlayer) + 1;
+		if(index == 1)
+			currentRound++;
 		if (index < playersList.size())
 			return playersList.get(index);
-		else
+		else{
 			return playersList.get(0);
+		}
 	}
 
 	@Override
 	public void accept(Move move){
         requireNonNull(move);
         if(!validMoves.contains(move))
-        	throw new IllegalArgumentException("Move not in valid moves!");
-		currentPlayer = nextPlayer(currentPlayer);
+        	throw new IllegalArgumentException("Move not in valid moves: "+move.toString() + "\nValid Moves: + "+ validMoves.toString());
+
+        if(move instanceof TicketMove){
+        	TicketMove tm = (TicketMove) move;
+        	players.get(currentPlayer).location(tm.destination());
+		}
+
+        currentPlayer = nextPlayer(currentPlayer);
 		ScotlandYardPlayer cp = players.get(currentPlayer);
 		cp.player().makeMove(this, cp.location(), validMove(currentPlayer), this);
 
@@ -256,3 +264,4 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 	}
 
 }
+
