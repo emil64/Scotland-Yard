@@ -146,13 +146,14 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 	}
 
 	private Set<Move> validMove(Colour player) {
-		ScotlandYardPlayer p = players.get(player);
+		ScotlandYardPlayer p;
+		p = players.get(player);
 		Set<Move> set = new HashSet<>();
 		Collection<Edge<Integer, Transport>> edges = getGraph().getEdgesFrom(new Node<Integer>(p.location()));
 		for (Edge<Integer, Transport> edge : edges){
 			Transport t = edge.data();
 			int destination = edge.destination().value();
-			Boolean mere = true;
+			boolean mere = true;
 			if(!p.hasTickets(Ticket.fromTransport(t)))
 				mere = false;
 			for (ScotlandYardPlayer d : detectives){
@@ -161,9 +162,6 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 			}
 			if(mere)
 				set.add(new TicketMove(p.colour(), Ticket.fromTransport(t), destination));
-		}
-		if(p.isMrX() && p.hasTickets(DOUBLE)){
-
 		}
 		return set;
 	}
@@ -195,13 +193,13 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 		if(p == null)
 			return Optional.empty();
 		if(p.isDetective())
-			return Optional.ofNullable(p.location());
+			return Optional.of(p.location());
 
 		if(currentRound != 0 && rounds.get(currentRound-1)) {
 			lastMrX = p.location();
-			return Optional.ofNullable(lastMrX);
+			return Optional.of(lastMrX);
 		}
-		return Optional.ofNullable(lastMrX);
+		return Optional.of(lastMrX);
 	}
 
 	@Override
