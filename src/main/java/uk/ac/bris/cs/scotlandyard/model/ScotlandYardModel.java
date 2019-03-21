@@ -166,8 +166,8 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 				validMoves.add(new TicketMove(p.colour(), Ticket.fromTransport(t), destination));
 		}
 		//System.out.println(validMoves.toString());
-		if(validMoves.isEmpty());
-			//validMoves.add();
+		if(validMoves.isEmpty())
+			validMoves.add(new PassMove(player));
 		return Collections.unmodifiableSet(validMoves);
 	}
 
@@ -187,14 +187,22 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
         requireNonNull(move);
         if(!validMoves.contains(move))
         	throw new IllegalArgumentException("Move not in valid moves: "+move.toString() + "\nValid Moves: + "+ validMoves.toString());
-
+		ScotlandYardPlayer cp;
         if(move instanceof TicketMove){
+        	cp = players.get(currentPlayer);
         	TicketMove tm = (TicketMove) move;
-        	players.get(currentPlayer).location(tm.destination());
+        	cp.location(tm.destination());
+			cp.removeTicket(tm.ticket());
+			if(cp.isDetective())
+				mrX.addTicket(tm.ticket());
+		}
+
+        if(move instanceof PassMove){
+
 		}
 
         currentPlayer = nextPlayer(currentPlayer);
-		ScotlandYardPlayer cp = players.get(currentPlayer);
+        cp = players.get(currentPlayer);
 		cp.player().makeMove(this, cp.location(), validMove(currentPlayer), this);
 
 	}
