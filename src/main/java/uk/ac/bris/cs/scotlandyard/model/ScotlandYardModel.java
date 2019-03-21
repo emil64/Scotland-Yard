@@ -201,9 +201,12 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 
 		}
 
-        currentPlayer = nextPlayer(currentPlayer);
-        cp = players.get(currentPlayer);
-		cp.player().makeMove(this, cp.location(), validMove(currentPlayer), this);
+        if(!isGameOver()) {
+			currentPlayer = nextPlayer(currentPlayer);
+			cp = players.get(currentPlayer);
+			cp.player().makeMove(this, cp.location(), validMove(currentPlayer), this);
+
+		}
 
 	}
 
