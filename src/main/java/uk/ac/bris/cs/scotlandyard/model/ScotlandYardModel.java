@@ -192,12 +192,28 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
         	cp = players.get(currentPlayer);
         	TicketMove tm = (TicketMove) move;
         	cp.location(tm.destination());
-			cp.removeTicket(tm.ticket());
 			if(cp.isDetective())
 				mrX.addTicket(tm.ticket());
+			if(cp.isMrX()){
+				if(rounds.get(getCurrentRound()))
+					lastMrX= mrX.location();
+				else move = new TicketMove(BLACK, tm.ticket(), lastMrX);
+			}
+			cp.removeTicket(tm.ticket());
 		}
 
-        if(move instanceof PassMove){
+        if(move instanceof DoubleMove){
+			DoubleMove doublemove = (DoubleMove) move;
+			TicketMove firstmove = doublemove.firstMove();
+			TicketMove secondmove = doublemove.secondMove();
+			if(!rounds.get(getCurrentRound())){
+				lastMrX=firstmove.destination();
+				currentRound++;
+				//accept(doublemove.firstMove());
+				players.get(currentPlayer).removeTicket(DOUBLE);
+				players.get(currentPlayer).removeTicket(firstmove.ticket());
+				players.get(currentPlayer).removeTicket(secondmove.ticket());
+			}
 
 		}
 
