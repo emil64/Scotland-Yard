@@ -226,11 +226,14 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
         if(!validMoves.contains(move))
         	throw new IllegalArgumentException("Move not in valid moves: "+move.toString() + "\nValid Moves: + "+ validMoves.toString());
 
+		if(currentPlayer == mrX.colour() && !gameOver){
+			for(Spectator spectator : spectators)
+				spectator.onRoundStarted(this, currentRound);
+		}
+		for(Spectator spectator : spectators)
+			spectator.onMoveMade(this, move);
         if(!checkGameOver()) {
 			ScotlandYardPlayer cp;
-
-			for(Spectator spectator : spectators)
-				spectator.onMoveMade(this, move);
 
 			if (move instanceof TicketMove) {
 				cp = players.get(currentPlayer);
@@ -246,10 +249,7 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 					}
 				}
 				cp.removeTicket(tm.ticket());
-				/*if(currentPlayer == mrX.colour()){
-					for(Spectator spectator : spectators)
-						spectator.onRoundStarted(this, currentRound);
-				}*/
+
 			}
 
 			if (move instanceof DoubleMove) {
@@ -265,10 +265,11 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
                 players.get(currentPlayer).removeTicket(firstmove.ticket());
                 players.get(currentPlayer).removeTicket(secondmove.ticket());
 				mrX.location(secondmove.destination());
+				currentRound++;
 				for(Spectator spectator : spectators) {
 					spectator.onMoveMade(this, firstmove);
 				}
-				currentRound++;
+				//currentRound++;
 
 				for(Spectator spectator : spectators)
 					spectator.onRoundStarted(this, currentRound);
@@ -345,6 +346,7 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 		if(getCurrentRound() > rounds.size() - 1){
 			gameOver = true;
 			winningPlayer.add(mrX.colour());
+			System.out.println("No more rounds!" + currentPlayer.toString());
 			return true;
 		}
 		//Detectives are stuck
