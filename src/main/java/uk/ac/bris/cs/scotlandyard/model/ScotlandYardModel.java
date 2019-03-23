@@ -1,27 +1,16 @@
 package uk.ac.bris.cs.scotlandyard.model;
 
-import static java.util.Arrays.asList;
-import static java.util.Collections.emptySet;
-import static java.util.Collections.singletonList;
-import static java.util.Collections.unmodifiableCollection;
-import static java.util.Collections.unmodifiableList;
-import static java.util.Collections.unmodifiableSet;
-import static java.util.Objects.requireNonNull;
-import static uk.ac.bris.cs.scotlandyard.model.Colour.BLACK;
-import static uk.ac.bris.cs.scotlandyard.model.Ticket.*;
-import static uk.ac.bris.cs.scotlandyard.model.Transport.FERRY;
-
-import java.text.CollationElementIterator;
-import java.util.*;
-import java.util.function.Consumer;
-
-import com.google.common.collect.ImmutableList;
 import uk.ac.bris.cs.gamekit.graph.Edge;
 import uk.ac.bris.cs.gamekit.graph.Graph;
 import uk.ac.bris.cs.gamekit.graph.ImmutableGraph;
 import uk.ac.bris.cs.gamekit.graph.Node;
 
-import javax.swing.text.html.Option;
+import java.util.*;
+import java.util.function.Consumer;
+
+import static java.util.Objects.requireNonNull;
+import static uk.ac.bris.cs.scotlandyard.model.Colour.BLACK;
+import static uk.ac.bris.cs.scotlandyard.model.Ticket.*;
 
 // TODO implement all methods and pass all tests
 public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
@@ -120,6 +109,7 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
             //Maps each detective to a colour
 			players.put(player.colour(), player);
         }
+        checkGameOver();
  	}
 
 
@@ -140,18 +130,19 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 	@Override
 	public void startRotate() {
 		ScotlandYardPlayer player = players.get(currentPlayer);
-		if(isGameOver()) throw new IllegalStateException("Game is over at the beginning of the rotation");
+		if(checkGameOver())
+			throw new IllegalStateException("Game is over at the beginning of the rotation");
 		Set<Move> validMoves = validMove(player.colour());
 		player.player().makeMove(this, player.location(), validMoves, this);
 	}
 
-	Set<Move> validMoves = new HashSet<>();;
+	private Set<Move> validMoves = new HashSet<>();
 
 	private Set<Move> validMove(Colour player) {
 		ScotlandYardPlayer p;
 		p = players.get(player);
 		validMoves.clear();
-		Collection<Edge<Integer, Transport>> edges = getGraph().getEdgesFrom(new Node<Integer>(p.location()));
+		Collection<Edge<Integer, Transport>> edges = getGraph().getEdgesFrom(new Node<>(p.location()));
 		for (Edge<Integer, Transport> edge : edges){
 			Transport t = edge.data();
 			int destination = edge.destination().value();
@@ -166,7 +157,7 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 				validMoves.add(new TicketMove(p.colour(), Ticket.fromTransport(t), destination));
 		}
 		//System.out.println(validMoves.toString());
-		if(validMoves.isEmpty())
+		if(validMoves.isEmpty() && player != mrX.colour())
 			validMoves.add(new PassMove(player));
 		return Collections.unmodifiableSet(validMoves);
 	}
@@ -187,42 +178,43 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
         requireNonNull(move);
         if(!validMoves.contains(move))
         	throw new IllegalArgumentException("Move not in valid moves: "+move.toString() + "\nValid Moves: + "+ validMoves.toString());
-		ScotlandYardPlayer cp;
-        if(move instanceof TicketMove){
-        	cp = players.get(currentPlayer);
-        	TicketMove tm = (TicketMove) move;
-        	cp.location(tm.destination());
-			if(cp.isDetective())
-				mrX.addTicket(tm.ticket());
-			if(cp.isMrX()){
-				if(rounds.get(getCurrentRound()))
-					lastMrX= mrX.location();
-				else move = new TicketMove(BLACK, tm.ticket(), lastMrX);
-			}
-			cp.removeTicket(tm.ticket());
-		}
 
-        if(move instanceof DoubleMove){
-			DoubleMove doublemove = (DoubleMove) move;
-			TicketMove firstmove = doublemove.firstMove();
-			TicketMove secondmove = doublemove.secondMove();
-			if(!rounds.get(getCurrentRound())){
-				lastMrX=firstmove.destination();
-				currentRound++;
-				//accept(doublemove.firstMove());
-				players.get(currentPlayer).removeTicket(DOUBLE);
-				players.get(currentPlayer).removeTicket(firstmove.ticket());
-				players.get(currentPlayer).removeTicket(secondmove.ticket());
+        if(!checkGameOver()) {
+			ScotlandYardPlayer cp;
+			if (move instanceof TicketMove) {
+				cp = players.get(currentPlayer);
+				TicketMove tm = (TicketMove) move;
+				cp.location(tm.destination());
+				if (cp.isDetective())
+					mrX.addTicket(tm.ticket());
+				if (cp.isMrX()) {
+					if (rounds.get(getCurrentRound()))
+						lastMrX = mrX.location();
+					else move = new TicketMove(BLACK, tm.ticket(), lastMrX);
+				}
+				cp.removeTicket(tm.ticket());
 			}
 
-		}
+			if (move instanceof DoubleMove) {
+				DoubleMove doublemove = (DoubleMove) move;
+				TicketMove firstmove = doublemove.firstMove();
+				TicketMove secondmove = doublemove.secondMove();
+				if (!rounds.get(getCurrentRound())) {
+					lastMrX = firstmove.destination();
+					currentRound++;
+					//accept(doublemove.firstMove());
+					players.get(currentPlayer).removeTicket(DOUBLE);
+					players.get(currentPlayer).removeTicket(firstmove.ticket());
+					players.get(currentPlayer).removeTicket(secondmove.ticket());
+				}
 
-        if(!isGameOver()) {
+			}
 			currentPlayer = nextPlayer(currentPlayer);
+			checkGameOver();
 			cp = players.get(currentPlayer);
 			cp.player().makeMove(this, cp.location(), validMove(currentPlayer), this);
-
 		}
+
 
 	}
 
@@ -268,6 +260,46 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 	@Override
 	public boolean isGameOver() {
 		return gameOver;
+	}
+
+	private boolean checkGameOver(){
+
+		gameOver = false;
+		//no more rounds :(
+		if(getCurrentRound() > rounds.size() - 1){
+			gameOver = true;
+			winningPlayer.add(mrX.colour());
+			return true;
+		}
+		//Detectives are stuck
+		gameOver = true;
+		for(ScotlandYardPlayer detective : detectives){
+			//System.out.println(validMove(detective.colour()).toString());
+			if(!validMove(detective.colour()).contains(new PassMove(detective.colour())))
+				gameOver = false;
+		}
+		if(gameOver){
+			winningPlayer.add(mrX.colour());
+			return true;
+		}
+
+		//mrX is captured
+		for (ScotlandYardPlayer detective : detectives)
+			if(detective.location() == mrX.location()){
+				winningPlayer.addAll(playersList.subList(1, playersList.size()));
+				gameOver = true;
+				return true;
+			}
+		//MrX stucked
+		if(getCurrentPlayer() == mrX.colour())
+			if(validMove(mrX.colour()).isEmpty()){
+				winningPlayer.addAll(playersList.subList(1, playersList.size()));
+				gameOver = true;
+				return true;
+			}
+		return false;
+
+
 	}
 
 	@Override
