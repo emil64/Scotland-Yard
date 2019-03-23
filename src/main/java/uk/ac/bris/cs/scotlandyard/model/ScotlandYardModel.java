@@ -172,13 +172,14 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 
 	private Set<Move> possibleDoubleMoves(Set<Move> moves){
 
-		if(!mrX.hasTickets(DOUBLE))
+		//System.out.println(rounds.size());
+		if(!mrX.hasTickets(DOUBLE) || getCurrentRound() > rounds.size()-2)
 			return Collections.emptySet();
 		Set<Move> db = new HashSet<>();
 		for(Move move : moves)
 			if (move instanceof TicketMove) {
 				TicketMove m = (TicketMove) move;
-				Collection<Edge<Integer, Transport>> edges = getGraph().getEdgesFrom(new Node<>(mrX.location()));
+				Collection<Edge<Integer, Transport>> edges = getGraph().getEdgesFrom(new Node<>(m.destination()));
 				for (Edge<Integer, Transport> edge : edges) {
 					Transport t = edge.data();
 					boolean mere = true;
