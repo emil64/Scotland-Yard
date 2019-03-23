@@ -255,12 +255,14 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 					players.get(currentPlayer).removeTicket(firstmove.ticket());
 					players.get(currentPlayer).removeTicket(secondmove.ticket());
 				}
+				mrX.location(secondmove.destination());
 
 			}
 			currentPlayer = nextPlayer(currentPlayer);
 			checkGameOver();
 			cp = players.get(currentPlayer);
-			cp.player().makeMove(this, cp.location(), validMove(currentPlayer), this);
+			if(cp.isDetective())
+				cp.player().makeMove(this, cp.location(), validMove(currentPlayer), this);
 		}
 
 
