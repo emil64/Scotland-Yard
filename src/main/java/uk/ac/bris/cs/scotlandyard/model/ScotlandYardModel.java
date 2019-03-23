@@ -146,19 +146,67 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 			Transport t = edge.data();
 			int destination = edge.destination().value();
 			boolean mere = true;
-			if(!p.hasTickets(Ticket.fromTransport(t)))
-				mere = false;
+
 			for (ScotlandYardPlayer d : detectives){
 				if(d.location() == destination)
 					mere = false;
 			}
+
+			if(mere && p.hasTickets(SECRET))
+				validMoves.add(new TicketMove(p.colour(), SECRET, destination));
+
+			if(!p.hasTickets(Ticket.fromTransport(t)))
+				mere = false;
+
 			if(mere)
 				validMoves.add(new TicketMove(p.colour(), Ticket.fromTransport(t), destination));
 		}
 		//System.out.println(validMoves.toString());
 		if(validMoves.isEmpty() && player != mrX.colour())
 			validMoves.add(new PassMove(player));
+		if(player == mrX.colour()){
+			validMoves.addAll(possibleDoubleMoves(validMoves));
+		}
 		return Collections.unmodifiableSet(validMoves);
+	}
+
+	private Set<Move> possibleDoubleMoves(Set<Move> moves){
+
+		if(!mrX.hasTickets(DOUBLE))
+			return Collections.emptySet();
+		Set<Move> db = new HashSet<>();
+		for(Move move : moves)
+			if (move instanceof TicketMove) {
+				TicketMove m = (TicketMove) move;
+				Collection<Edge<Integer, Transport>> edges = getGraph().getEdgesFrom(new Node<>(mrX.location()));
+				for (Edge<Integer, Transport> edge : edges) {
+					Transport t = edge.data();
+					boolean mere = true;
+					int destination = edge.destination().value();
+
+					for (ScotlandYardPlayer d : detectives) {
+						if (d.location() == destination)
+							mere = false;
+					}
+					if (mere) {
+						if(mrX.hasTickets(SECRET) && m.ticket()!=SECRET)
+							db.add(new DoubleMove(mrX.colour(), m, new TicketMove(mrX.colour(), SECRET, destination)));
+						if(m.ticket() == SECRET && mrX.hasTickets(SECRET, 2))
+							db.add(new DoubleMove(mrX.colour(), m, new TicketMove(mrX.colour(), SECRET, destination)));
+
+						if (m.ticket() == Ticket.fromTransport(t)) {
+							if (!mrX.hasTickets(Ticket.fromTransport(t), 2))
+								mere = false;
+						} else if (!mrX.hasTickets(Ticket.fromTransport(t)))
+							mere = false;
+
+					}
+					if (mere)
+						db.add(new DoubleMove(mrX.colour(), m, new TicketMove(mrX.colour(), Ticket.fromTransport(t), destination)));
+
+				}
+			}
+		return db;
 	}
 
 	private Colour nextPlayer(Colour currentPlayer){
