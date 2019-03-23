@@ -290,6 +290,7 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 					spectator.onRotationComplete(this);
 			}
 		}
+        else spectatorGameOver();
 
 
 	}
@@ -350,7 +351,6 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 		if(getCurrentRound() > rounds.size() - 1){
 			gameOver = true;
 			winningPlayer.add(mrX.colour());
-			spectatorGameOver();
 			return true;
 		}
 		//Detectives are stuck
@@ -362,7 +362,6 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 		}
 		if(gameOver){
 			winningPlayer.add(mrX.colour());
-			spectatorGameOver();
 			return true;
 		}
 
@@ -379,7 +378,6 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 			if(validMove(mrX.colour()).isEmpty()){
 				winningPlayer.addAll(playersList.subList(1, playersList.size()));
 				gameOver = true;
-				spectatorGameOver();
 				return true;
 			}
 		return false;
