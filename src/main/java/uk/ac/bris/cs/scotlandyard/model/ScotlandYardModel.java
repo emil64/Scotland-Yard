@@ -204,7 +204,6 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 					}
 					if (mere)
 						db.add(new DoubleMove(mrX.colour(), m, new TicketMove(mrX.colour(), Ticket.fromTransport(t), destination)));
-
 				}
 			}
 		return db;
@@ -247,10 +246,10 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 					}
 				}
 				cp.removeTicket(tm.ticket());
-				if(currentPlayer == mrX.colour()){
+				/*if(currentPlayer == mrX.colour()){
 					for(Spectator spectator : spectators)
 						spectator.onRoundStarted(this, currentRound);
-				}
+				}*/
 			}
 
 			if (move instanceof DoubleMove) {
@@ -339,11 +338,6 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 		return gameOver;
 	}
 
-	private void spectatorGameOver(){
-		for(Spectator spectator : spectators)
-			spectator.onGameOver(this, getWinningPlayers());
-	}
-
 	private boolean checkGameOver(){
 
 		gameOver = false;
@@ -383,6 +377,11 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 		return false;
 
 
+	}
+
+	private void spectatorGameOver(){
+		for(Spectator spectator : spectators)
+			spectator.onGameOver(this, getWinningPlayers());
 	}
 
 	@Override
