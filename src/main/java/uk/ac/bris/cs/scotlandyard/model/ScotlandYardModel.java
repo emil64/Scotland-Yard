@@ -253,9 +253,12 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 				acceptMrX((TicketMove) move);
 			if(move instanceof DoubleMove){
 				DoubleMove dm = (DoubleMove) move;
+				mrX.removeTicket(DOUBLE);
+				//currentPlayer=nextPlayer(mrX.colour());
 				spectatorMoveMade(dm);
 				acceptMrX(dm.firstMove());
 				acceptMrX(dm.secondMove());
+				//currentPlayer=mrX.colour();
 			}
 		}
 		currentPlayer = nextPlayer(currentPlayer);
