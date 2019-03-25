@@ -212,8 +212,6 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 	private Colour nextPlayer(Colour currentPlayer){
 
 		int index = playersList.indexOf(currentPlayer) + 1;
-		/*if(index == 1)
-			currentRound++; */
 		if (index < playersList.size())
 			return playersList.get(index);
 		else{
@@ -235,8 +233,6 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 	private void acceptDetective(Move move){
 		if(move instanceof PassMove) {
 			currentPlayer = nextPlayer(currentPlayer);
-			if(currentPlayer == mrX.colour())
-			    checkGameOver();
 			spectatorMoveMade(move);
 		}
 		if(move instanceof TicketMove){
@@ -252,7 +248,6 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
                 checkGameOver();
 			spectatorMoveMade(tm);
 		}
-
 	}
 
 	@Override
@@ -263,11 +258,9 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 			acceptDetective(move);
 		else{
 			if(move instanceof TicketMove) {
-			    checkGameOver();
 				acceptMrX((TicketMove) move);
 			}
 			if(move instanceof DoubleMove){
-				checkGameOver();
 			    DoubleMove dm = (DoubleMove) move;
 				int d1, d2;
 				d1 = lastMrX;
@@ -290,17 +283,13 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 		if(cp.isDetective()) {
 			if (!mrXCaptured())
 				cp.player().makeMove(this, cp.location(), validMove(currentPlayer), this);
-			else{
-                checkGameOver();
-				spectatorGameOver();
-			}
+			else spectatorGameOver();
 		}
 		else{
 			if(checkGameOver())
 				spectatorGameOver();
 			else spectatorRotationComplete();
 		}
-
 	}
 
 	@Override
@@ -385,7 +374,7 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 
 	private boolean mrXStuck(){
 		if(getCurrentPlayer() == mrX.colour())
-			if(validMove(mrX.colour()). isEmpty()){
+			if(validMove(mrX.colour()).isEmpty()){
 				winningPlayer.addAll(playersList.subList(1, playersList.size()));
 				gameOver = true;
 				return true;
@@ -437,6 +426,5 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 	public Graph<Integer, Transport> getGraph() {
 		return new ImmutableGraph<>(graph);
 	}
-
 }
 
