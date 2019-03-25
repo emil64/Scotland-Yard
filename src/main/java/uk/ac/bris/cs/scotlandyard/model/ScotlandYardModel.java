@@ -210,6 +210,7 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 	}
 
 	private Colour nextPlayer(Colour currentPlayer){
+
 		int index = playersList.indexOf(currentPlayer) + 1;
 		/*if(index == 1)
 			currentRound++; */
@@ -226,6 +227,7 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 		currentRound++;
 		mrX.location(move.destination());
 		getPlayerLocation(mrX.colour());
+		currentPlayer = nextPlayer(mrX.colour());
 		spectatorsRoundStarted();
 		spectatorMoveMade(new TicketMove(mrX.colour(), move.ticket(), lastMrX));
 	}
@@ -255,7 +257,6 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 		else{
 			if(move instanceof TicketMove) {
 				acceptMrX((TicketMove) move);
-				currentPlayer = nextPlayer(currentPlayer);
 			}
 			if(move instanceof DoubleMove){
 				DoubleMove dm = (DoubleMove) move;
@@ -399,10 +400,9 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 	}
 
 	private void spectatorsRoundStarted(){
-		for(Spectator s: spectators) {
+		for(Spectator s: getSpectators()) {
 			s.onRoundStarted(this, currentRound);
 		}
-		System.out.println("I'm out of start");
 	}
 
 	private boolean isRevealRound(int round){
