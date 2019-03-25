@@ -223,7 +223,7 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 
 
 	private void acceptMrX(TicketMove move){
-		mrX.removeTicket(move.ticket());
+	    mrX.removeTicket(move.ticket());
 		currentRound++;
 		mrX.location(move.destination());
 		getPlayerLocation(mrX.colour());
@@ -235,6 +235,8 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 	private void acceptDetective(Move move){
 		if(move instanceof PassMove) {
 			currentPlayer = nextPlayer(currentPlayer);
+			if(currentPlayer == mrX.colour())
+			    checkGameOver();
 			spectatorMoveMade(move);
 		}
 		if(move instanceof TicketMove){
@@ -243,9 +245,14 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 			cp.removeTicket(tm.ticket());
 			mrX.addTicket(tm.ticket());
 			cp.location(tm.destination());
+			if(mrXCaptured())
+			    checkGameOver();
 			currentPlayer = nextPlayer(currentPlayer);
+            if(currentPlayer == mrX.colour())
+                checkGameOver();
 			spectatorMoveMade(tm);
 		}
+
 	}
 
 	@Override
@@ -256,10 +263,12 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 			acceptDetective(move);
 		else{
 			if(move instanceof TicketMove) {
+			    checkGameOver();
 				acceptMrX((TicketMove) move);
 			}
 			if(move instanceof DoubleMove){
-				DoubleMove dm = (DoubleMove) move;
+				checkGameOver();
+			    DoubleMove dm = (DoubleMove) move;
 				int d1, d2;
 				d1 = lastMrX;
 				d2 = lastMrX;
@@ -282,7 +291,7 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 			if (!mrXCaptured())
 				cp.player().makeMove(this, cp.location(), validMove(currentPlayer), this);
 			else{
-				gameOver = true;
+                checkGameOver();
 				spectatorGameOver();
 			}
 		}
@@ -344,7 +353,7 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 	}
 
 	private boolean noMoreRounds(){
-		if(getCurrentRound() == rounds.size()){
+		if(getCurrentRound() >= rounds.size()){
 			winningPlayer.add(mrX.colour());
 			return true;
 		}
@@ -376,7 +385,7 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 
 	private boolean mrXStuck(){
 		if(getCurrentPlayer() == mrX.colour())
-			if(validMove(mrX.colour()).isEmpty()){
+			if(validMove(mrX.colour()). isEmpty()){
 				winningPlayer.addAll(playersList.subList(1, playersList.size()));
 				gameOver = true;
 				return true;
