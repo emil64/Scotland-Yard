@@ -65,9 +65,7 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 			throw new IllegalArgumentException("Detectives have black colour?!");
 		if(!(firstDetective.tickets.containsKey(TAXI) &&
 				firstDetective.tickets.containsKey(BUS) &&
-				firstDetective.tickets.containsKey(UNDERGROUND) &&
-				firstDetective.tickets.containsKey(SECRET) &&
-				firstDetective.tickets.containsKey(DOUBLE)))
+				firstDetective.tickets.containsKey(UNDERGROUND)))
 			throw new IllegalArgumentException("firstDetective needs fields for every possible ticket");
 		detectives.add(new ScotlandYardPlayer(firstDetective.player, firstDetective.colour, firstDetective.location, firstDetective.tickets));
 
@@ -82,9 +80,7 @@ public class ScotlandYardModel implements ScotlandYardGame, Consumer<Move> {
 				throw new IllegalArgumentException("Detectives have black colour?!");
 			if(!(player.tickets.containsKey(TAXI) &&
 					player.tickets.containsKey(BUS) &&
-					player.tickets.containsKey(UNDERGROUND) &&
-					player.tickets.containsKey(SECRET) &&
-					player.tickets.containsKey(DOUBLE)))
+					player.tickets.containsKey(UNDERGROUND)))
 				throw new IllegalArgumentException("Every player needs fields for every possible ticket");
 			detectives.add(new ScotlandYardPlayer(player.player, player.colour, player.location, player.tickets));
 			playersList.add(player.colour);
