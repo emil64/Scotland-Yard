@@ -23,7 +23,7 @@ public interface Spectator {
 	default void onRoundStarted(ScotlandYardView view, int round) {}
 
 	/**
-	 * Called whe a rotation is complete
+	 * Called when a rotation is complete
 	 *
 	 * @param view the view of the game, never null
 	 */
